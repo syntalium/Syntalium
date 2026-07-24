@@ -62,6 +62,7 @@ payload key, value, string, or array order does.
 ## Public components
 
 - [Canonicalization contract](docs/SNAP_CANONICALIZATION_V1.md)
+- [Public proof-layer architecture](docs/PUBLIC_PROOF_ARCHITECTURE.md)
 - [JSON Schema](schemas/snap-proof-v1.schema.json)
 - [Synthetic sanitized fixture](examples/snap-proof-v1.synthetic.json)
 - [Independent verifier](verify_snap.py)
