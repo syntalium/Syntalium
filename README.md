@@ -1,189 +1,132 @@
-<div align="center">
+# Syntalium Public Proof Layer
 
-Syntalium
+[![Public proof verification](https://github.com/syntalium/Syntalium/actions/workflows/proof-verification.yml/badge.svg?branch=main)](https://github.com/syntalium/Syntalium/actions/workflows/proof-verification.yml)
 
-Verifiable AI crypto market intelligence
+Syntalium publishes an independent, reproducible integrity check for a SNAP
+proof envelope:
 
-Market context, signal lifecycle, and cryptographic publication proof — built for independent verification.
+```mermaid
+flowchart TD
+    A["SNAP proof envelope"] --> B["Extract payload"]
+    B --> C["SNAP-C14N-1 UTF-8 bytes"]
+    C --> D["SHA-256 fingerprint"]
+    D --> E{"Matches envelope?"}
+```
 
-Website ·Verify ·Telegram ·X ·Medium
+This repository deliberately exposes the proof contract, not the private
+intelligence engine.
 
-</div>
+## Public proof you can reproduce
 
-What Syntalium is
+Requirements: Python 3.11 or newer. The verifier uses only the Python standard
+library.
 
-Syntalium is an independent crypto market-intelligence project focused on a simple principle:
+Clone the repository and verify the sanitized synthetic fixture:
 
-Open the proof layer. Protect the intelligence layer.
+```bash
+git clone https://github.com/syntalium/Syntalium.git
+cd Syntalium
+python verify_snap.py examples/snap-proof-v1.synthetic.json
+```
 
-The system collects market data, evaluates multi-timeframe context, produces structured market decisions, and publishes a verifiable record of what was known at publication time.
+Expected result:
 
-Syntalium is not designed to hide changed predictions behind edited posts. Public records are tied to canonical payloads and SHA-256 fingerprints so that their integrity can be checked independently.
+```json
+{"fingerprint_sha256": "1e7d5a27400466af1910055656d0e9bb07d5d416ab137f3901c8ee47a31aa5f8", "ok": true, "spec_version": "SNAP-PROOF-1", "status": "verified"}
+```
 
-How the proof layer works
+Run the complete test suite:
 
-Market data
-    ↓
-Validation and closed-candle controls
-    ↓
-Feature and market-context analysis
-    ↓
-Model-assisted decision pipeline
-    ↓
-Publication and runtime safety gates
-    ↓
-Canonical SNAP payload
-    ↓
-SHA-256 fingerprint
-    ↓
-Website + Telegram publication
-    ↓
-Public verification
+```bash
+python -m unittest discover -s tests -v
+```
 
-A SNAP record captures a structured decision state. Its canonical representation is hashed with SHA-256 and exposed through the public verification layer.
+No dependency installation, secret, private API, VPS, model, or production
+engine is required.
 
-The proof layer is intended to answer:
+## Tamper test
 
-What was recorded?
+Create a copy in which one payload value is changed but the original
+fingerprint remains:
 
-When was it published?
+```bash
+python -c "import json; from pathlib import Path; source=Path('examples/snap-proof-v1.synthetic.json'); data=json.loads(source.read_text(encoding='utf-8')); data['payload']['symbol']='BTCUSDU'; Path('tampered.json').write_text(json.dumps(data, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')"
+python verify_snap.py tampered.json
+```
 
-Has the published payload changed?
+The second command returns structured output with
+`"status": "fingerprint_mismatch"` and exit code `1`. Object key reordering or
+insignificant source whitespace does not change the fingerprint; changing a
+payload key, value, string, or array order does.
 
-How did the record evolve through its lifecycle?
+## Public components
 
-Verification proves record integrity and publication history. It does not guarantee predictive accuracy, profitability, or future market outcomes.
+- [Canonicalization contract](docs/SNAP_CANONICALIZATION_V1.md)
+- [JSON Schema](schemas/snap-proof-v1.schema.json)
+- [Synthetic sanitized fixture](examples/snap-proof-v1.synthetic.json)
+- [Independent verifier](verify_snap.py)
+- [Automated tests](tests/test_verify_snap.py)
+- [GitHub Actions workflow](.github/workflows/proof-verification.yml)
+- [Security and disclosure policy](SECURITY.md)
+- [GitHub Actions runs](https://github.com/syntalium/Syntalium/actions/workflows/proof-verification.yml)
 
-Public engineering principles
+## Verification contract
 
-Closed-candle discipline — decisions are based on completed market intervals.
+The envelope declares:
 
-Canonical records — the same normalized payload produces the same fingerprint.
+- `spec_version`: `SNAP-PROOF-1`;
+- `hash_algorithm`: `SHA-256`;
+- `canonicalization`: `SNAP-C14N-1`;
+- `payload`: the only value that is canonicalized and hashed;
+- `fingerprint_sha256`: the expected 64-character lowercase hexadecimal
+  fingerprint.
 
-SHA-256 verification — public records can be checked independently.
+The verifier rejects duplicate JSON keys, floating-point and non-finite numbers,
+unknown envelope members, malformed metadata, and malformed fingerprints. It
+uses a constant-time fingerprint comparison and stable JSON output.
 
-Lifecycle transparency — records can move from open to management and close states.
+CLI exit codes:
 
-Anti-repaint design — published history is preserved rather than silently rewritten.
+| Code | Meaning |
+| ---: | --- |
+| `0` | Fingerprint matches |
+| `1` | Valid proof envelope, but fingerprint does not match |
+| `2` | Invalid JSON, input error, or contract violation |
 
-Fail-closed behavior — unavailable or unhealthy inputs should block unsupported output instead of being replaced with fabricated data.
+## Disclosure boundary
 
-Public proof, private edge — verification contracts are public; sensitive model and execution logic remain private.
+| Public in this repository | Not published |
+| --- | --- |
+| Canonicalization contract | Private SignalX/Syntalium engine |
+| JSON Schema | Models, weights, checkpoints, and training data |
+| Sanitized synthetic fixture | Exact feature formulas, weights, and thresholds |
+| Independent verifier and tests | Entry, SL, TP, execution, and trading rules |
+| Minimal CI workflow | Secrets, `.env`, databases, logs, IPs, and deployment configuration |
 
-High-level architecture
+See [SECURITY.md](SECURITY.md) before proposing public material.
 
-flowchart LR
-    A[Market Data Sources] --> B[Collection & Validation]
-    B --> C[Market Context & Feature Layer]
-    C --> D[Model-Assisted Decision Engine]
-    D --> E[Safety & Publication Gates]
-    E --> F[Canonical SNAP Record]
-    F --> G[SHA-256 Fingerprint]
-    G --> H[Website]
-    G --> I[Telegram]
-    H --> J[Public Verify Layer]
-    I --> J
+## What this proves
 
-The diagram deliberately describes component boundaries without exposing credentials, model artifacts, private infrastructure, or proprietary decision formulas.
+A green local or GitHub Actions verification proves that the published payload
+is deterministically canonicalized to UTF-8 bytes, hashed with SHA-256, and
+detectably fails against its original fingerprint after a payload change.
 
-Technology currently represented
+## What this does not prove
 
-Python intelligence and publication services
+This repository does **not** prove:
 
-Next.js and TypeScript public interface
+- AI-model accuracy or forecast quality;
+- real or future profitability;
+- operation of the complete private production engine;
+- the original publication time without separate timestamp evidence;
+- any future market result.
 
-Telegram alert and lifecycle-notification layer
+The included record is explicitly
+`fixture_kind: synthetic_sanitized`. It is test data, not a production record,
+trade, signal, or performance claim.
 
-REST-style public data and verification endpoints
+## Responsible use
 
-Canonical JSON payloads and SHA-256 fingerprints
-
-Sanitized verification examples and public research exports
-
-Automated testing for proof, routing, and publication behavior
-
-Disclosure boundary
-
-Public
-
-Described at a high level
-
-Private
-
-SNAP concepts and verification flow
-
-Feature families and market-context pipeline
-
-API keys, tokens, credentials, and .env files
-
-Canonical payload examples
-
-Model governance and champion/challenger process
-
-Model artifacts, weights, and exact feature formulas
-
-SHA-256 reference verification
-
-Runtime health and publication safeguards
-
-Exact thresholds and proprietary decision rules
-
-Public API contracts
-
-Multi-timeframe analysis architecture
-
-Entry, stop-loss, take-profit, and execution logic
-
-Signal lifecycle semantics
-
-Data-quality and closed-candle controls
-
-VPS, IP addresses, database contents, and deployment configuration
-
-Sanitized test fixtures
-
-Integration boundaries
-
-Private logs, user data, and unreleased source code
-
-Public interfaces
-
-Product and public record: syntalium.com
-
-SNAP verification: syntalium.com/verify
-
-Alerts and lifecycle updates: Telegram @Syntalium
-
-Project updates: X @Syntalium
-
-Technical articles: Medium @Syntalium
-
-What will be opened next
-
-The public technology layer is being prepared in small, auditable releases:
-
-SNAP format and canonicalization notes
-
-Sanitized payload and verification examples
-
-Machine-readable public schemas
-
-Reference SHA-256 verifier
-
-Public API contracts
-
-Architecture and integration documentation
-
-Reproducible verification tests
-
-No private production source will be copied into this repository without a dedicated security and disclosure review.
-
-Responsible use
-
-Syntalium provides market intelligence and publication verification. It does not provide guaranteed returns, custody services, or individualized financial advice. Crypto markets involve substantial risk; users remain responsible for their own decisions.
-
-<div align="center">
-
-Syntalium — verify the record, then evaluate the intelligence.
-
-</div>
+Syntalium provides market intelligence and publication-integrity tooling. It
+does not guarantee returns and does not provide individualized financial
+advice. Crypto markets involve substantial risk.
