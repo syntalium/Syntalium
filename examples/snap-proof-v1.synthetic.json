@@ -1,0 +1,16 @@
+{
+  "spec_version": "SNAP-PROOF-1",
+  "hash_algorithm": "SHA-256",
+  "canonicalization": "SNAP-C14N-1",
+  "payload": {
+    "snap_id": "DEMO-SNAP-0001",
+    "fixture_kind": "synthetic_sanitized",
+    "timestamp_utc": "2026-01-01T00:00:00Z",
+    "symbol": "BTCUSDT",
+    "timeframe": "1h",
+    "lifecycle_state": "OBSERVATION",
+    "record_status": "PUBLISHED",
+    "sequence": 1
+  },
+  "fingerprint_sha256": "1e7d5a27400466af1910055656d0e9bb07d5d416ab137f3901c8ee47a31aa5f8"
+}
