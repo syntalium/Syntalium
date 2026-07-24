@@ -1,0 +1,117 @@
+# Environment and local secrets (including examples/templates)
+.env
+.env.*
+.env*
+*.secret
+*.secrets
+secrets/
+credentials/
+credentials*.json
+service-account*.json
+
+# Keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+id_rsa*
+id_ed25519*
+.ssh/
+.aws/
+
+# Databases and logs
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.log
+logs/
+
+# Models, checkpoints, and generated artifacts
+models/
+model_artifacts/
+checkpoints/
+artifacts/
+*.pkl
+*.pickle
+*.joblib
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Training data and private exports
+data/
+datasets/
+training_data/
+private_exports/
+exports/
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.arrow
+
+# Private/internal intelligence code
+private/
+internal/
+engine/
+signalx/
+syntalium_engine/
+src/private/
+src/internal/
+src/engine/
+
+# Deployment, infrastructure, and runtime state
+deploy/
+deployment/
+infra/
+infrastructure/
+runtime/
+state/
+k8s/
+helm/
+.terraform/
+*.tfstate
+*.tfstate.*
+docker-compose*.yml
+docker-compose*.yaml
+*.service
+nginx*.conf
+
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node caches and build output
+node_modules/
+.next/
+.nuxt/
+.svelte-kit/
+dist/
+build/
+coverage/
+.npm/
+.yarn/
+.pnpm-store/
+
+# Editors, operating systems, and generated tamper demo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+tampered.json
