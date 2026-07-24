@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/syntalium/Syntalium/blob/main/schemas/snap-proof-v1.schema.json",
+  "title": "Syntalium SNAP Proof Envelope V1",
+  "description": "Public integrity-verification envelope. It contains no model, feature, threshold, trading-rule, or infrastructure fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_version",
+    "hash_algorithm",
+    "canonicalization",
+    "payload",
+    "fingerprint_sha256"
+  ],
+  "properties": {
+    "spec_version": {
+      "const": "SNAP-PROOF-1"
+    },
+    "hash_algorithm": {
+      "const": "SHA-256"
+    },
+    "canonicalization": {
+      "const": "SNAP-C14N-1"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/value"
+      }
+    },
+    "fingerprint_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "$defs": {
+    "value": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/value"
+          }
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/value"
+          }
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}
